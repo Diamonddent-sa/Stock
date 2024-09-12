@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      padding: 20px;
+      background-color: #f4f6f8; /* Light gray background for modern look */
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font */
+      color: #333; /* Darker text for readability */
+    }
+
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .search-bar {
+      margin-bottom: 20px;
+    }
+
+    .search-bar input[type="text"] {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      width: 100%;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: border-color 0.3s ease;
+    }
+
+    .search-bar input[type="text"]:focus {
+      border-color: #007bff; /* Blue border on focus for modern feel */
+      outline: none;
+      box-shadow: inset 0 2px 6px rgba(0, 123, 255, 0.2);
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+      font-weight: normal;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    /* Rainbow text effect */
+    .rainbow-text {
+      background:  rgb(45, 13, 68);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+  </style>
+  <script>
+    function loadData() {
+      google.script.run.withSuccessHandler(displayData).getSheetData();
+    }
+
+    function displayData(data) {
+      window.sheetData = data;
+      renderTable(data);
+    }
+
+    function renderTable(data) {
+      var table = '<table class="table table-bordered table-striped">';
+      table += '<thead><tr>';
+      for (var j = 0; j < data[0].length; j++) {
+        table += '<th>' + data[0][j] + '</th>'; // Assuming the first row contains headers
+      }
+      table += '</tr></thead><tbody>';
+
+      for (var i = 1; i < data.length; i++) { // Start from 1 to skip headers
+        table += '<tr>';
+        for (var j = 0; j < data[i].length; j++) {
+          table += '<td>' + data[i][j] + '</td>';
+        }
+        table += '</tr>';
+      }
+      table += '</tbody></table>';
+      document.getElementById('output').innerHTML = table;
+    }
+
+    function searchTable() {
+      var query = document.getElementById('search').value.toLowerCase();
+      var filteredData = window.sheetData.filter(function(row) {
+        return row.some(function(cell) {
+          return cell.toString().toLowerCase().includes(query);
+        });
+      });
+      renderTable(filteredData);
+    }
+  </script>
+</head>
+<body onload="loadData()">
+  <div class="container">
+    <h1 class="rainbow-text">Diamond Dent Stock</h1>
+    <div class="search-bar">
+      <input type="text" id="search" class="form-control" placeholder="Search..." oninput="searchTable()">
+    </div>
+    <div id="output"></div>
+  </div>
+</body>
+</html>
