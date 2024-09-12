@@ -1,125 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <base target="_top">
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      padding: 20px;
-      background-color: #f4f6f8; /* Light gray background for modern look */
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font */
-      color: #333; /* Darker text for readability */
-    }
-
-    .container {
-      background-color: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .search-bar {
-      margin-bottom: 20px;
-    }
-
-    .search-bar input[type="text"] {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 10px;
-      width: 100%;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-      transition: border-color 0.3s ease;
-    }
-
-    .search-bar input[type="text"]:focus {
-      border-color: #007bff; /* Blue border on focus for modern feel */
-      outline: none;
-      box-shadow: inset 0 2px 6px rgba(0, 123, 255, 0.2);
-    }
-
-    table {
-      width: 100%;
-      margin-top: 20px;
-      border-collapse: collapse;
-    }
-
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-
-    th {
-      background-color: #007bff;
-      color: white;
-      font-weight: normal;
-    }
-
-    tr:hover {
-      background-color: #f1f1f1;
-    }
-
-    /* Rainbow text effect */
-    .rainbow-text {
-      background:  rgb(45, 13, 68);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 28px;
-    }
-  </style>
-  <script>
-    function loadData() {
-      google.script.run.withSuccessHandler(displayData).getSheetData();
-    }
-
-    function displayData(data) {
-      window.sheetData = data;
-      renderTable(data);
-    }
-
-    function renderTable(data) {
-      var table = '<table class="table table-bordered table-striped">';
-      table += '<thead><tr>';
-      for (var j = 0; j < data[0].length; j++) {
-        table += '<th>' + data[0][j] + '</th>'; // Assuming the first row contains headers
-      }
-      table += '</tr></thead><tbody>';
-
-      for (var i = 1; i < data.length; i++) { // Start from 1 to skip headers
-        table += '<tr>';
-        for (var j = 0; j < data[i].length; j++) {
-          table += '<td>' + data[i][j] + '</td>';
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
         }
-        table += '</tr>';
-      }
-      table += '</tbody></table>';
-      document.getElementById('output').innerHTML = table;
-    }
-
-    function searchTable() {
-      var query = document.getElementById('search').value.toLowerCase();
-      var filteredData = window.sheetData.filter(function(row) {
-        return row.some(function(cell) {
-          return cell.toString().toLowerCase().includes(query);
-        });
-      });
-      renderTable(filteredData);
-    }
-  </script>
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .message {
+            color: green;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
 </head>
-<body onload="loadData()">
-  <div class="container">
-    <h1 class="rainbow-text">Diamond Dent Stock</h1>
-    <div class="search-bar">
-      <input type="text" id="search" class="form-control" placeholder="Search..." oninput="searchTable()">
-    </div>
-    <div id="output"></div>
-  </div>
+<body>
+    <h1>Submit Your Stock Information</h1>
+    <form id="stockForm" action="https://script.google.com/macros/s/AKfycbwlhQzH0KuiZeh8Wt9JYRri3NhG2ok5hueZvY6WjY5yr7hwRsGdAhlyTu2UNWYE3nFFig/exec" method="post" onsubmit="handleSubmit(event)">
+        <label for="qr">QR Code:</label>
+        <input type="text" id="qr" name="qr" required>
+        
+        <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" name="quantity" required>
+        
+        <button type="submit">Submit</button>
+    </form>
+    <div id="message" class="message"></div>
+
+    <script>
+        function handleSubmit(event) {
+            event.preventDefault(); // Prevents the default form submission
+            
+            var form = document.getElementById('stockForm');
+            var messageDiv = document.getElementById('message');
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form)
+            })
+            .then(response => {
+                if (response.ok) {
+                    messageDiv.textContent = 'Submitted';
+                    form.reset(); // Clears the form fields
+                    setTimeout(() => {
+                        window.location.href = 'https://diamonddent-sa.github.io/Stock/'; // Redirect after 2 seconds
+                    }, 2000);
+                } else {
+                    messageDiv.textContent = 'Submission failed.';
+                }
+            })
+            .catch(error => {
+                messageDiv.textContent = 'Error: ' + error.message;
+            });
+        }
+    </script>
 </body>
 </html>
