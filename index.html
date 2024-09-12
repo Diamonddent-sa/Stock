@@ -28,7 +28,7 @@
             text-align: center;
             color: #333;
         }
-        .search-container {
+        .search-container, .pagination {
             margin-bottom: 20px;
             text-align: center;
         }
@@ -59,6 +59,19 @@
         tbody tr:hover {
             background-color: #f1f1f1;
         }
+        .pagination button {
+            padding: 10px 15px;
+            margin: 0 5px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .pagination button.disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -79,41 +92,74 @@
                 <!-- Data will be inserted here -->
             </tbody>
         </table>
+        <div class="pagination">
+            <button id="prevPage" class="disabled">Previous</button>
+            <button id="nextPage">Next</button>
+        </div>
     </div>
 
     <script>
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbyK09u8M5FgbwmMHjlKgs7uQHg3MIicEmAb4KDDKXPi5WrvaH3IV95xQQihcDMrCdrHRQ/exec';
-        
+        const rowsPerPage = 20; // Number of rows per page
+        let currentPage = 1;
+        let data = [];
+
+        function renderTable() {
+            const tableBody = document.querySelector('#stockTable tbody');
+            tableBody.innerHTML = ''; // Clear existing data
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, data.length);
+
+            for (let i = startIndex; i < endIndex; i++) {
+                const row = data[i];
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.Code}</td>
+                    <td>${row.Description}</td>
+                    <td>${row.StockQuantity}</td>
+                `;
+                tableBody.appendChild(tr);
+            }
+            updatePaginationButtons();
+        }
+
+        function updatePaginationButtons() {
+            document.getElementById('prevPage').classList.toggle('disabled', currentPage === 1);
+            document.getElementById('nextPage').classList.toggle('disabled', currentPage * rowsPerPage >= data.length);
+        }
+
         fetch(scriptUrl)
             .then(response => response.json())
-            .then(data => {
-                const tableBody = document.querySelector('#stockTable tbody');
-                data.forEach(row => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${row.Code}</td>
-                        <td>${row.Description}</td>
-                        <td>${row.StockQuantity}</td>
-                    `;
-                    tableBody.appendChild(tr);
-                });
+            .then(fetchedData => {
+                data = fetchedData;
+                renderTable();
                 
                 // Add search functionality
                 const searchInput = document.getElementById('searchInput');
                 searchInput.addEventListener('input', function() {
                     const filter = searchInput.value.toLowerCase();
-                    const rows = tableBody.querySelectorAll('tr');
-                    
-                    rows.forEach(row => {
-                        const cells = row.querySelectorAll('td');
-                        let found = false;
-                        cells.forEach(cell => {
-                            if (cell.textContent.toLowerCase().includes(filter)) {
-                                found = true;
-                            }
-                        });
-                        row.style.display = found ? '' : 'none';
-                    });
+                    const filteredData = data.filter(row => 
+                        row.Code.toLowerCase().includes(filter) ||
+                        row.Description.toLowerCase().includes(filter) ||
+                        row.StockQuantity.toString().includes(filter)
+                    );
+                    data = filteredData;
+                    currentPage = 1;
+                    renderTable();
+                });
+                
+                document.getElementById('prevPage').addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderTable();
+                    }
+                });
+                
+                document.getElementById('nextPage').addEventListener('click', () => {
+                    if (currentPage * rowsPerPage < data.length) {
+                        currentPage++;
+                        renderTable();
+                    }
                 });
             })
             .catch(error => console.error('Error fetching data:', error));
