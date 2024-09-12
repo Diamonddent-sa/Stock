@@ -1,1 +1,122 @@
-<form id="myForm" action="https://script.google.com/macros/s/AKfycbwlhQzH0KuiZeh8Wt9JYRri3NhG2ok5hueZvY6WjY5yr7hwRsGdAhlyTu2UNWYE3nFFig/exec" method="post">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .search-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Data</h1>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search...">
+        </div>
+        <table id="stockTable">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Description</th>
+                    <th>Stock Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbyK09u8M5FgbwmMHjlKgs7uQHg3MIicEmAb4KDDKXPi5WrvaH3IV95xQQihcDMrCdrHRQ/exec';
+        
+        fetch(scriptUrl)
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector('#stockTable tbody');
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${row.Code}</td>
+                        <td>${row.Description}</td>
+                        <td>${row.StockQuantity}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+                
+                // Add search functionality
+                const searchInput = document.getElementById('searchInput');
+                searchInput.addEventListener('input', function() {
+                    const filter = searchInput.value.toLowerCase();
+                    const rows = tableBody.querySelectorAll('tr');
+                    
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        let found = false;
+                        cells.forEach(cell => {
+                            if (cell.textContent.toLowerCase().includes(filter)) {
+                                found = true;
+                            }
+                        });
+                        row.style.display = found ? '' : 'none';
+                    });
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    </script>
+</body>
+</html>
