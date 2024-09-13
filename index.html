@@ -7,182 +7,86 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: auto;
-            color: #4B0082; /* Dark violet color */
-        }
-        .container {
-            width: 80%;
-            max-width: 1200px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            box-sizing: border-box;
-            position: relative;
-        }
-        h1 {
-            text-align: center;
-            color: #4B0082; /* Dark violet color */
-        }
-        .search-container {
-            position: sticky;
-            top: 0;
-            background: #fff;
-            padding: 10px 0;
-            z-index: 1;
-            border-bottom: 1px solid #ddd;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            background-color: #d0f0c0; /* Light green background */
-            color: #333; /* Text color */
+            color: darkviolet; /* Font color */
         }
         table {
-            width: 100%;
             border-collapse: collapse;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
+            width: 100%;
         }
         th, td {
-            padding: 12px;
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: left;
         }
-        th {
-            background-color: #f4f4f4;
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
         }
-        tbody tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tbody tr:hover {
-            background-color: #f1f1f1;
-        }
-        .pagination {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .pagination button {
-            padding: 10px 15px;
-            margin: 0 5px;
-            border: none;
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
+        input[type="text"] {
+            padding: 10px; /* Increased padding for larger input */
+            margin-right: 10px;
+            border: 1px solid #ddd;
             border-radius: 4px;
+            background-color: lightgreen; /* Search field background */
+            width: 300px; /* Increased width for larger input field */
+            font-size: 16px; /* Increased font size */
         }
-        .pagination button.disabled {
-            background-color: #ddd;
-            cursor: not-allowed;
+        input[type="submit"] {
+            padding: 10px 20px;
+            color: #fff;
+            background-color: darkviolet;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px; /* Increased font size */
+        }
+        input[type="submit"]:hover {
+            background-color: #5d2b7e; /* Darker violet on hover */
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Stock Data</h1>
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search...">
-        </div>
-        <table id="stockTable">
-            <thead>
-                <tr>
-                    <th>Code</th>
-                    <th>Description</th>
-                    <th>Stock Quantity</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Data will be inserted here -->
-            </tbody>
-        </table>
-        <div class="pagination">
-            <button id="prevPage" class="disabled">Previous</button>
-            <button id="nextPage">Next</button>
-        </div>
-    </div>
+    <form id="searchForm">
+        <input type="text" id="searchInput" placeholder="Search..." />
+        <input type="submit" value="Search">
+    </form>
+    <table id="dataTable">
+    </table>
 
     <script>
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbyK09u8M5FgbwmMHjlKgs7uQHg3MIicEmAb4KDDKXPi5WrvaH3IV95xQQihcDMrCdrHRQ/exec';
-        const rowsPerPage = 20; // Number of rows per page
-        let currentPage = 1;
-        let data = [];
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyK09u8M5FgbwmMHjlKgs7uQHg3MIicEmAb4KDDKXPi5WrvaH3IV95xQQihcDMrCdrHRQ/exec'; // Your Google Apps Script URL
 
-        function fetchData() {
-            fetch(scriptUrl)
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent form submission
+            fetchData(document.getElementById('searchInput').value);
+        });
+
+        function fetchData(query) {
+            fetch(`${scriptURL}?search=${encodeURIComponent(query)}`)
                 .then(response => response.json())
-                .then(fetchedData => {
-                    data = fetchedData;
-                    renderTable();
-                    addSearchFunctionality();
+                .then(data => {
+                    displayData(data);
                 })
                 .catch(error => console.error('Error fetching data:', error));
         }
 
-        function renderTable() {
-            const tableBody = document.querySelector('#stockTable tbody');
-            tableBody.innerHTML = ''; // Clear existing data
-            const startIndex = (currentPage - 1) * rowsPerPage;
-            const endIndex = Math.min(startIndex + rowsPerPage, data.length);
+        function displayData(data) {
+            const table = document.getElementById('dataTable');
+            table.innerHTML = ''; // Clear existing table content
 
-            for (let i = startIndex; i < endIndex; i++) {
-                const row = data[i];
+            // Populate table with data
+            data.forEach(row => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${row.Code}</td>
-                    <td>${row.Description}</td>
-                    <td>${row.StockQuantity}</td>
-                `;
-                tableBody.appendChild(tr);
-            }
-            updatePaginationButtons();
-        }
-
-        function updatePaginationButtons() {
-            document.getElementById('prevPage').classList.toggle('disabled', currentPage === 1);
-            document.getElementById('nextPage').classList.toggle('disabled', currentPage * rowsPerPage >= data.length);
-        }
-
-        function addSearchFunctionality() {
-            const searchInput = document.getElementById('searchInput');
-            searchInput.addEventListener('input', function() {
-                const filter = searchInput.value.toLowerCase();
-                const filteredData = data.filter(row => 
-                    row.Code.toLowerCase().includes(filter) ||
-                    row.Description.toLowerCase().includes(filter) ||
-                    row.StockQuantity.toString().includes(filter)
-                );
-                currentPage = 1; // Reset to the first page
-                data = filteredData;
-                renderTable();
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
             });
         }
 
-        document.getElementById('prevPage').addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderTable();
-            }
-        });
-
-        document.getElementById('nextPage').addEventListener('click', () => {
-            if (currentPage * rowsPerPage < data.length) {
-                currentPage++;
-                renderTable();
-            }
-        });
-
-        // Fetch data on page load
-        fetchData();
+        // Fetch all data initially
+        fetchData('');
     </script>
 </body>
 </html>
