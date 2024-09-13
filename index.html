@@ -47,7 +47,7 @@
                 row.innerHTML = `
                     <td>${item.Code}</td>
                     <td>${item.Description}</td>
-                    <td>${item['Stock Quantity']}</td>
+                    <td>${item.Stock}</td> <!-- Updated to match new key 'Stock' -->
                 `;
                 tableBody.appendChild(row);
             });
@@ -75,7 +75,7 @@
             <tr>
                 <th>Code</th>
                 <th>Description</th>
-                <th>Stock Quantity</th>
+                <th>Stock</th> <!-- Updated to match new key 'Stock' -->
             </tr>
         </thead>
         <tbody id="dataBody"></tbody>
